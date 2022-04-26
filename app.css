@@ -1,0 +1,57 @@
+/**
+ * [mz_dash]
+ *
+ * @version: 0.0.1
+ * @author: [author]
+ * @description [description]
+ *
+ * [license]
+ */
+
+/**
+ * NOTICE: It's important that you target your application with the [app] attribute
+ */
+
+[app="app.mz_dash"] {
+	/* background-color: #080C16; */
+	width: 800px;
+	height: 480px;
+}
+
+
+[app="app.mz_dash"] .bg-dash {
+	position: absolute;
+	width: 800px;
+	height: 480px;
+	background-image: url(images/car-bg.png) ;
+	z-index: 0;
+}
+
+[app="app.mz_dash"] .speed-indicator {
+	position: absolute;
+	
+	background-image: url(images/meter-indicator.png) ;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 100%;
+	width: 130px;
+	height: 3px;
+	top: 238px;
+	left: 40px;
+	z-index: 1;
+	/* 0 km/h: -67.5 */
+	/* 160 km/h: 202.5deg */
+	/* transform: rotate(202.5deg); */
+	transform-origin: 118px;
+}
+
+
+
+[app="app.mz_dash"] .value {
+	display: block;
+	font-size: 12px;
+	/* line-height: 240px; */
+	color: white;
+	/* font-family: robotoMedium,"Helvetica","Roboto","Arial",sans-serif; */
+	/* opacity: .9; */
+}
