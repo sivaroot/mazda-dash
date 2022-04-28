@@ -42,10 +42,7 @@ CustomApplicationsHandler.register(
        * Images are assigned to an id, e.g. {coolBackground: 'images/cool-background.png'}
        */
 
-      images: {
-        // background: "images/car-bg.png",
-        meterIndicator: "images/meter-indicator.png",
-      },
+      images: {},
     },
 
     /**
@@ -127,19 +124,126 @@ CustomApplicationsHandler.register(
      */
 
     created: function () {
-   
+      this.mainContainer = $("<div/>")
+        .addClass("main-container")
+        .appendTo(this.canvas);
+
+      this.vehicleSpeedValue = $("<div/>")
+        .addClass("vehicle-speed-value")
+        .html(250)
+        .appendTo(this.canvas);
+
+      this.transmissionPositionValue = $("<div/>")
+        .addClass("transmission-value")
+        .appendTo(this.canvas);
+
+      this.engineSpeedIndicator = $("<div/>")
+        .addClass("engine-indicator")
+        .appendTo(this.canvas);
+
+      this.datetimeContainer = $("<div/>")
+        .addClass("datetime-container")
+        .appendTo(this.canvas);
+
+      this.time = $("<div/>").addClass("time").appendTo(this.datetimeContainer);
+      this.date = $("<div/>").addClass("date").appendTo(this.datetimeContainer);
+
+      this.subscribeVehicleSpeed();
+      this.subscribeEngineSpeed();
+      this.subscribeTransmissionPosition();
+      this.subscribeGPSTime();
     },
 
-    subscribeSpeed: function () {
+    subscribeGPSTime: function () {
+      var subscribeId = "gpstimestamp";
+      this.subscribe(
+        subscribeId,
+        function (value) {
+          var datetime = new Date(value * 1000);
+          var hours = datetime.getHours(),
+            minutes = datetime.getMinutes();
+          datetime.setHours(datetime.getHours() - 5);
+          if (datetime.getHours() < 10) {
+            hours = `0${hours}`;
+          }
+          if (minutes < 10) {
+            minutes = `0${minutes}`;
+          }
+          this.time.html(
+            datetime.toLocaleTimeString("en", {
+              hour12: false,
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          );
+          this.date.html(
+            datetime.toLocaleDateString("en", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })
+          );
+        }.bind(this)
+      );
+    },
+
+    subscribeTransmissionPosition: function () {
+      var subscribeId = "vdtctransmchangeleverposition";
+      this.subscribe(
+        subscribeId,
+        function (value) {
+          var positions = ["P", "R", "N", "D"];
+          this.transmissionPositionValue.html(positions[value - 1]);
+        }.bind(this)
+      );
+    },
+
+    subscribeTransmissionPosition: function () {
+      var subscribeId = "vdtctransmchangeleverposition";
+      this.subscribe(
+        subscribeId,
+        function (value) {
+          var positions = ["P", "R", "N", "D"];
+          var indexPosition = value - 1;
+          if (indexPosition === 3) {
+            this.transmissionPositionValue.css("color", "#2BFF73");
+          }
+          this.transmissionPositionValue.html(positions[indexPosition]);
+        }.bind(this)
+      );
+    },
+
+    subscribeVehicleSpeed: function () {
       this.subscribe(
         VehicleData.vehicle.speed,
         function (value) {
-          var angle = (270 / 160) * value - 67.5;
-          if (value > 160) {
-            angle = 202.5;
+          if (value < 10) {
+            this.vehicleSpeedValue.css("left", "254px");
+          } else if (value < 100) {
+            this.vehicleSpeedValue.css("left", "243.5px");
+          } else {
+            this.vehicleSpeedValue.css("left", "233px");
+          }
+          this.vehicleSpeedValue.html(value);
+        }.bind(this)
+      );
+    },
+
+    subscribeEngineSpeed: function () {
+      this.subscribe(
+        VehicleData.vehicle.rpm,
+        function (value) {
+          var angleRange = 270;
+          var maxValueRange = 6000;
+          var angleCurrent = (angleRange / maxValueRange) * value - 67.5;
+          if (value > maxValueRange) {
+            angleCurrent = 202.5;
           }
 
-          this.speedIndicator.css("transform", `rotate(${angle}deg)`);
+          this.engineSpeedIndicator.css(
+            "transform",
+            `rotate(${angleCurrent}deg)`
+          );
         }.bind(this)
       );
     },
